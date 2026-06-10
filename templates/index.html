@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Sales Forecasting Dashboard</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS (Vanilla Glassmorphism Styling) -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+    <!-- Background Accents (Glowing blurred gradients behind glass components) -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass">
+            <div class="brand">
+                <i class="fa-solid fa-chart-line brand-icon"></i>
+                <div class="brand-text">
+                    <h2>Superstore</h2>
+                    <span>Sales Forecasting</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-tab="overview">
+                    <i class="fa-solid fa-table-columns"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="eda">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    <span>Historical EDA</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="forecasting">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>ML Forecasting</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="insights">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <span>Strategic Insights</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="exports">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Export Center</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="theme-btn glass-btn">
+                    <i class="fa-solid fa-sun"></i>
+                    <span id="theme-text">Light Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header glass">
+                <div class="header-title">
+                    <h1 id="page-title">Executive Summary</h1>
+                    <p id="page-subtitle">Historical performance and projected sales growth</p>
+                </div>
+                <div class="header-controls">
+                    <div class="status-indicator">
+                        <span class="pulse-dot"></span>
+                        <span id="model-status">Best Model: Auto-Selected</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Loading overlay -->
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="spinner"></div>
+                <p>Training Machine Learning Models...</p>
+            </div>
+
+            <!-- Tab Content Wrapper -->
+            <div class="content-body">
+                
+                <!-- TAB: OVERVIEW -->
+                <div id="tab-overview" class="tab-content active">
+                    <!-- Metrics Row -->
+                    <div class="metrics-grid">
+                        <div class="metric-card glass">
+                            <div class="metric-icon-wrapper sales-icon">
+                                <i class="fa-solid fa-money-bill-trend-up"></i>
+                            </div>
+                            <div class="metric-details">
+                                <span class="metric-title">TOTAL HISTORICAL SALES</span>
+                                <h3 id="metric-total-sales" class="metric-value">$0.00</h3>
+                                <span class="metric-subtitle">4-Year Transaction Period</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass">
+                            <div class="metric-icon-wrapper profit-icon">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <div class="metric-details">
+                                <span class="metric-title">TOTAL HISTORICAL PROFIT</span>
+                                <h3 id="metric-total-profit" class="metric-value">$0.00</h3>
+                                <span class="metric-subtitle" id="metric-profit-margin">Margin: 0.0%</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass">
+                            <div class="metric-icon-wrapper forecast-icon">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </div>
+                            <div class="metric-details">
+                                <span class="metric-title">90-DAY FORECASTED SALES</span>
+                                <h3 id="metric-forecasted-sales" class="metric-value">$0.00</h3>
+                                <span class="metric-subtitle" id="forecast-model-name">Model: -</span>
+                            </div>
+                        </div>
+                        <div class="metric-card glass">
+                            <div class="metric-icon-wrapper accuracy-icon">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                            <div class="metric-details">
+                                <span class="metric-title">FORECAST ACCURACY</span>
+                                <h3 id="metric-accuracy" class="metric-value">0.0%</h3>
+                                <span class="metric-subtitle" id="metric-accuracy-label">Based on testing set RMSE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Overview Charts Grid -->
+                    <div class="charts-grid-main">
+                        <!-- Future Forecast Chart (Large) -->
+                        <div class="chart-card glass span-2">
+                            <div class="chart-header">
+                                <h3>90-Day Future Sales Forecast</h3>
+                                <div class="chart-actions">
+                                    <button class="toggle-chart-btn active" data-horizon="30">30 Days</button>
+                                    <button class="toggle-chart-btn" data-horizon="90">90 Days</button>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="futureForecastChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Side Overview Card: Executive Summary & Recommendation -->
+                        <div class="chart-card glass flex-col-card">
+                            <div class="chart-header">
+                                <h3>Executive Forecast Summary</h3>
+                            </div>
+                            <div class="executive-summary-body">
+                                <p class="exec-intro">The forecasting models completed training. The automatically selected best model is <strong id="exec-best-model">None</strong>.</p>
+                                <div class="exec-highlights">
+                                    <div class="exec-highlight-item">
+                                        <span class="hl-label">Next 30 Days Forecast:</span>
+                                        <span class="hl-value" id="exec-30-sales">$0.00</span>
+                                    </div>
+                                    <div class="exec-highlight-item">
+                                        <span class="hl-label">Next 90 Days Forecast:</span>
+                                        <span class="hl-value" id="exec-90-sales">$0.00</span>
+                                    </div>
+                                </div>
+                                <div class="exec-rec-box">
+                                    <h4><i class="fa-solid fa-circle-check"></i> High Priority Recommendation</h4>
+                                    <p id="exec-top-rec">Loading recommendations...</p>
+                                </div>
+                                <button class="action-btn glass-btn mt-auto" onclick="switchTab('insights')">
+                                    View Full Strategic Report <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: HISTORICAL EDA -->
+                <div id="tab-eda" class="tab-content">
+                    <div class="charts-grid-2x2">
+                        <!-- Monthly Sales Trend -->
+                        <div class="chart-card glass">
+                            <div class="chart-header">
+                                <h3>Monthly Sales Trend</h3>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="monthlyTrendChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Profit Trend -->
+                        <div class="chart-card glass">
+                            <div class="chart-header">
+                                <h3>Profit Trend by Month</h3>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="profitTrendChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Sales by Category -->
+                        <div class="chart-card glass">
+                            <div class="chart-header">
+                                <h3>Sales & Profit by Category</h3>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Sales by Region -->
+                        <div class="chart-card glass">
+                            <div class="chart-header">
+                                <h3>Sales by Region</h3>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="regionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Selling Products Row -->
+                    <div class="chart-card glass mt-6">
+                        <div class="chart-header">
+                            <h3>Top 10 Selling Products</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="dashboard-table" id="top-products-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Product Name</th>
+                                        <th>Total Sales</th>
+                                        <th>Quantity Sold</th>
+                                        <th>Total Profit</th>
+                                        <th>Margin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: ML FORECASTING -->
+                <div id="tab-forecasting" class="tab-content">
+                    <!-- Models Comparison Table & Info -->
+                    <div class="charts-grid-main">
+                        <div class="chart-card glass span-2">
+                            <div class="chart-header">
+                                <h3>Model Comparison Matrix</h3>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="dashboard-table" id="model-comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Model Name</th>
+                                            <th>Mean Absolute Error (MAE)</th>
+                                            <th>Root Mean Squared Error (RMSE)</th>
+                                            <th>R² Score (Variance Explained)</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="model-selection-info">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <p>The system evaluates three forecasting algorithms on a historical test set. The model with the lowest Root Mean Squared Error (RMSE) is automatically selected for forecasting. Linear Regression captures overall growth gradients, while Random Forest and XGBoost excel at seasonal cycle variations.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Model Selection Diagnostics Card -->
+                        <div class="chart-card glass flex-col-card">
+                            <div class="chart-header">
+                                <h3>Selected Model Profile</h3>
+                            </div>
+                            <div class="profile-body" id="selected-model-profile">
+                                <div class="profile-header">
+                                    <h4 id="profile-name">Random Forest</h4>
+                                    <span class="badge" id="profile-badge">Best Model</span>
+                                </div>
+                                <div class="profile-stats">
+                                    <div class="stat-line">
+                                        <span>MAE:</span>
+                                        <strong id="profile-mae">$0.00</strong>
+                                    </div>
+                                    <div class="stat-line">
+                                        <span>RMSE:</span>
+                                        <strong id="profile-rmse">$0.00</strong>
+                                    </div>
+                                    <div class="stat-line">
+                                        <span>R² Score:</span>
+                                        <strong id="profile-r2">0.0000</strong>
+                                    </div>
+                                </div>
+                                <div class="profile-desc">
+                                    <h5>Feature Importance Highlights:</h5>
+                                    <ul id="profile-features">
+                                        <li>Trend (days elapsed)</li>
+                                        <li>Seasonal Sine/Cosine (Month & Day of Year)</li>
+                                        <li>Day of Week (IsWeekend indicator)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Forecast vs Actual Plot -->
+                    <div class="chart-card glass mt-6">
+                        <div class="chart-header">
+                            <h3>Model Validation: Test Set Actual vs. Forecasted Sales (Last 90 Days)</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="forecastVsActualChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: STRATEGIC INSIGHTS -->
+                <div id="tab-insights" class="tab-content">
+                    <div class="insights-layout">
+                        <!-- Key Performance Highlights -->
+                        <div class="insights-column">
+                            <div class="chart-card glass h-full">
+                                <div class="chart-header">
+                                    <h3>Market Analysis Insights</h3>
+                                </div>
+                                <div class="insights-detail-list">
+                                    <div class="insight-block">
+                                        <span class="insight-category"><i class="fa-solid fa-tags"></i> Category Performance</span>
+                                        <h4 id="insight-category-best">Technology</h4>
+                                        <p>Generates the highest sales volume of <strong id="insight-category-sales">$0.00</strong> and total profit of <strong id="insight-category-profit">$0.00</strong>. Margins are strong at <strong id="insight-category-margin">0.0%</strong>.</p>
+                                    </div>
+                                    <div class="insight-block">
+                                        <span class="insight-category"><i class="fa-solid fa-map-location-dot"></i> Regional Performance</span>
+                                        <h4 id="insight-region-best">West Region</h4>
+                                        <p>The top performing geographical territory with total historical sales of <strong id="insight-region-sales">$0.00</strong>. It represents the highest density of retail sales.</p>
+                                    </div>
+                                    <div class="insight-block">
+                                        <span class="insight-category"><i class="fa-solid fa-cloud-sun-rain"></i> Seasonal Demand Pattern</span>
+                                        <h4 id="insight-season-peak">November & December</h4>
+                                        <p id="insight-season-desc">Historical order logs confirm sales peak significantly towards the end of the year, driven by holiday procurement budgets.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations list -->
+                        <div class="insights-column">
+                            <div class="chart-card glass h-full">
+                                <div class="chart-header">
+                                    <h3>Operational Recommendations</h3>
+                                </div>
+                                <div class="recommendations-container" id="recommendations-list">
+                                    <!-- Dynamic list of recommendations -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: EXPORTS -->
+                <div id="tab-exports" class="tab-content">
+                    <div class="exports-grid">
+                        <!-- PDF Export Card -->
+                        <div class="export-card glass">
+                            <div class="export-icon pdf-color">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </div>
+                            <div class="export-details">
+                                <h3>Executive Forecast Report (PDF)</h3>
+                                <p>Generate a professional print-ready executive summary report containing historical metrics, model comparison benchmarks, weekly forecast projections, visual charts, and business recommendations.</p>
+                                <a href="/api/export/pdf" class="action-btn glass-btn download-btn mt-6">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Download PDF Report
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- CSV Export Card -->
+                        <div class="export-card glass">
+                            <div class="export-icon csv-color">
+                                <i class="fa-solid fa-file-csv"></i>
+                            </div>
+                            <div class="export-details">
+                                <h3>90-Day Predictions Dataset (CSV)</h3>
+                                <p>Download the granular daily predictions dataset. Includes forecasted sales volume, upper and lower 95% confidence intervals, and date indexes. Suitable for importing into inventory planning systems.</p>
+                                <a href="/api/export/csv" class="action-btn glass-btn download-btn mt-6">
+                                    <i class="fa-solid fa-file-arrow-down"></i> Download CSV File
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom JS Dashboard Logic -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
